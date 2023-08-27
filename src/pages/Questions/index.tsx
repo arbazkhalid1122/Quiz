@@ -1,6 +1,7 @@
-import {  notification } from 'antd';
-import React, {  useState } from 'react';
+import { notification } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { After } from '..';
+import axios from 'axios';
 
 interface Question {
     id: number;
@@ -12,63 +13,22 @@ interface Question {
 interface QuestionProps {
     qType: string;
 }
-
-const Array: { [key: string]: Question[] } = {
-    frontend: [
-        {
-            id: 1,
-            text: 'frontenmd?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-        {
-            id: 2,
-            text: 'Which planet is known as the Red Planet?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-        {
-            id: 3,
-            text: 'Which planet is known as the Red Planet?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-    ],
-    backend: [
-        {
-            id: 1,
-            text: 'backend?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-        {
-            id: 2,
-            text: 'Which planet is known as the Red Planet?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-        {
-            id: 3,
-            text: 'Which planet is known as the Red Planet?',
-            options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-            answer: 'Mars',
-        },
-    ],
-};
+interface Data {
+    [key: string]: Question[];
+}
 
 
 const Question: React.FC<QuestionProps> = (props) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [click, setClick] = useState<number | null>(null); 
+    const [click, setClick] = useState<number | null>(null);
     const [selectItem, setSelectItems] = useState(null)
     const [thank, setThank] = useState(false)
-    const [optionArray, setOptionArray] = useState<any[]>([]); 
+    const [optionArray, setOptionArray] = useState<any[]>([]);
     const [correct, setCorrect] = useState<number | null>(null)
     const [wrong, setWrong] = useState<number | null>(null)
+    const [data, setData] = useState<Data>({});
 
-    const currentQuestions = Array[props.qType] || [];
 
-    const currentQuestion = currentQuestions[currentQuestionIndex];
 
 
     const handle = (option: any, index: number) => {
@@ -77,24 +37,42 @@ const Question: React.FC<QuestionProps> = (props) => {
         setOptionArray((prevOptions: any) => [...prevOptions, option]);
     };
 
-    console.log(props);
+const url = 'http://localhost:3000/api/route/hello'
 
-    const handleNextClick = (answer: any) => {
+useEffect(()=>{
+    const load = async ()=>{
+        try {
+            const response = await axios.get(url);
+            const currentQuestions = response.data;
+            setData(currentQuestions);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    }
+    load()
+},[])
+
+const filteredQuestions = data[props.qType] || [];
+
+    
+    const handleNextClick = async (answer: any) => {
+
         if (selectItem) {
-            if (currentQuestionIndex < Array[props.qType].length - 1) {
+            if (currentQuestionIndex < filteredQuestions.length - 1) {
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
                 setClick(null)
                 setThank(false)
                 setSelectItems(null)
             }
             else {
-                const results = Array[props.qType].map((item, index) => item.answer === optionArray[index]);
-                const getTrue = results.filter((item) => item).length
-                setCorrect(getTrue)
+                const results = filteredQuestions.map((item, index) => item.answer === optionArray[index]);
+                const getTrue = results.filter((item) => item).length;
+                setCorrect(getTrue);
                 const getFalse = results.length - getTrue;
-                setWrong(getFalse)
-                setThank(true)
+                setWrong(getFalse);
+                setThank(true);
             }
+
         } else {
             notification.error({
                 message: 'Wrong Answer',
@@ -112,7 +90,7 @@ const Question: React.FC<QuestionProps> = (props) => {
         })
     }
 
-
+  
 
     return (
         <div>
@@ -128,15 +106,14 @@ const Question: React.FC<QuestionProps> = (props) => {
                 ) : (
                     <div>
                         <h1>Quiz App</h1>
-                        {currentQuestion && (
+                        {filteredQuestions && (
                             <div>
-                                <h2>Question {currentQuestion.id}</h2>
-                                <p>{currentQuestion.text}</p>
-                                {currentQuestion.options.map((option, index) => (
+                                <h2>Question {filteredQuestions[currentQuestionIndex]?.id}</h2>
+                                <p>{filteredQuestions[currentQuestionIndex]?.text}</p>
+                                {filteredQuestions[currentQuestionIndex]?.options.map((option, index) => (
                                     <div key={index}>
                                         <div
                                             className='items'
-                                            onBlur={() => setClick(null)}
                                             onClick={() => handle(option, index)}
                                             style={{ background: click === index ? 'rgb(192 237 133)' : '' }}
                                         >
@@ -146,18 +123,23 @@ const Question: React.FC<QuestionProps> = (props) => {
                                 ))}
                             </div>
                         )}
+
                         <div className='btn'>
-                            <button onClick={() => handleNextClick(currentQuestion.answer)}>Next</button>
+                            <button onClick={() => handleNextClick(filteredQuestions[currentQuestionIndex]?.answer)}>Next</button>
                         </div>
                         <div className='hint'>
-                            <p style={{textDecoration:'underline'}} onClick={() => hintClick(currentQuestion.answer)}>Hint</p>
+                            <p style={{ textDecoration: 'underline' }} onClick={() => hintClick(filteredQuestions[currentQuestionIndex]?.answer)}>Hint</p>
                         </div>
                     </div>
                 )}
             </div>
+            <button onClick={handleNextClick}>Button</button>
         </div>
-    );  
+    );
 };
 
 export default Question;
+
+
+
 

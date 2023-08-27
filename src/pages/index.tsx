@@ -1,3 +1,5 @@
+
+'use client'
 import { Button, Col, Form, Input, Row, Select, notification } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import { ThemeProvider, styled } from 'styled-components';
@@ -7,7 +9,7 @@ import { CiPickerHalf } from 'react-icons/ci';
 
 const App: React.FC = () => {
   const [form] = Form.useForm();
-
+  
   const [color, setColor] = useState(false)
   const [question, setQuestion] = useState(false)
   const [colorValue, setColorValur] = useState<any | null>(null)
