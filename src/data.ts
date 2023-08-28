@@ -26,7 +26,7 @@ export const Data: { [key: string]: Question[] } = {
         },
     ],
     backend: [
-        {
+        { 
             id: 1,
             text: 'backend?',
             options: ['Mars', 'Jupiter', 'Venus', 'Saturn'],
