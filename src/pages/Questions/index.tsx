@@ -2,6 +2,7 @@ import { notification } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { After } from '..';
 import axios from 'axios';
+import { useStore } from '@/Store/store';
 
 interface Question {
     id: number;
@@ -29,7 +30,7 @@ const Question: React.FC<QuestionProps> = (props) => {
     const [selectItem, setSelectItems] = useState(null)
     const [thank, setThank] = useState(false)
     const [optionArray, setOptionArray] = useState<any[]>([]);
-    const [data, setData] = useState<Data>({});
+    const [question, setQuestion] = useState<any[]>([]);
     const [results, setResults] = useState<ResponseData | null>(null);
 
 
@@ -39,47 +40,44 @@ const Question: React.FC<QuestionProps> = (props) => {
         setOptionArray((prevOptions: any) => [...prevOptions, option]);
     };
 
-    const url = 'http://localhost:3000/api/route/hello'
+
+    const {
+        quizStore: { getApii },
+    } = useStore(null);
+
 
     useEffect(() => {
         const load = async () => {
-            try {
-                const response = await axios.get(url);
-                const currentQuestions = response.data;
-                setData(currentQuestions);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
+            const res = await getApii()
+            setQuestion(res)
         }
         load()
     }, [])
 
-    const filteredQuestions = data[props.qType] || [];
 
 
     const handleNextClick = async (answer: any) => {
         if (selectItem) {
-            if (currentQuestionIndex < filteredQuestions.length - 1) {
+            if (currentQuestionIndex < question.length - 1) {
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
-                setClick(null)
-                setThank(false)
-                setSelectItems(null)
-            }
-            else {
-                const type = props.qType
-                const post = axios.post('http://localhost:3000/api/route/hello', { optionArray, type })
-                const res = await post
-                setResults(res.data)
+                setClick(null);
+                setThank(false);
+                setSelectItems(null);
+            } else {
+                const type = props.qType;
+                const post = axios.post('http://localhost:3000/api/route/hello', { optionArray, type });
+                const res = await post;
+                setResults(res.data);
                 setThank(true);
             }
-
         } else {
             notification.error({
                 message: 'Wrong Answer',
-                description: 'Please select Option  .',
+                description: 'Please select an option.',
             });
         }
     };
+    
 
 
     const hintClick = (name: string) => {
@@ -104,29 +102,32 @@ const Question: React.FC<QuestionProps> = (props) => {
             ) : (
                 <div>
                     <h1>Quiz App</h1>
-                    {filteredQuestions && (
-                        <div>
-                            <h2>Question {filteredQuestions[currentQuestionIndex]?.id}</h2>
-                            <p>{filteredQuestions[currentQuestionIndex]?.text}</p>
-                            {filteredQuestions[currentQuestionIndex]?.options.map((option, index) => (
-                                <div key={index}>
-                                    <div
-                                        className='items'
-                                        onClick={() => handle(option, index)}
-                                        style={{ background: click === index ? 'rgb(192 237 133)' : '' }}
-                                    >
-                                        {option}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
+                    <div>
+                        {question?.filter((item) => item.category === props.qType).slice(currentQuestionIndex, currentQuestionIndex + 1)
+                            .map((item, questionIndex) => (
+                                <div key={questionIndex}>
+                                    <h2>Question {item?.id}</h2>
+                                    <p>{item?.text}</p>
+                                    {item?.options?.map((option: any, optionIndex: any) => (
+                                        <div key={optionIndex}>
+                                            <div
+                                                className='items'
+                                                onClick={() => handle(option, optionIndex)}
+                                                style={{
+                                                    background: click === optionIndex ? 'rgb(192, 237, 133)' : '',
+                                                }}
+                                            >
+                                                {option}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>))}
+                    </div>
                     <div className='btn'>
-                        <button onClick={() => handleNextClick(filteredQuestions[currentQuestionIndex]?.answer)}>Next</button>
+                        <button onClick={() => handleNextClick(question[currentQuestionIndex]?.answer)}>Next</button>
                     </div>
                     <div className='hint'>
-                        <p style={{ textDecoration: 'underline' }} onClick={() => hintClick(filteredQuestions[currentQuestionIndex]?.answer)}>Hint</p>
+                        <p style={{ textDecoration: 'underline' }} onClick={() => hintClick(question[currentQuestionIndex]?.answer)}>Hint</p>
                     </div>
                 </div>
             )}

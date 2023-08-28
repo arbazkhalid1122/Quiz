@@ -6,6 +6,7 @@ import { ThemeProvider, styled } from 'styled-components';
 import { ColorPicker } from 'antd';
 import Question from './Questions';
 import { CiPickerHalf } from 'react-icons/ci';
+import { useStore } from '@/Store/store';
 
 const App: React.FC = () => {
   const [form] = Form.useForm();
@@ -17,7 +18,7 @@ const App: React.FC = () => {
   const [container, setContainer] = useState<any | null>(null)
   const [conColor, setConColor] = useState(false)
 
- 
+  
 
   const handleColor = (e: any) => {
     setColor(true)
@@ -87,7 +88,7 @@ const App: React.FC = () => {
                   />
                 </Form.Item> 
 
-                <Form.Item>
+                <Form.Item>  
                   <div className='btn'>
                     <button>Next</button>
                   </div>
