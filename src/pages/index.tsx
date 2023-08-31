@@ -1,7 +1,7 @@
 
 'use client'
-import { Button, Col, Form, Input, Row, Select, notification } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import { Form, Input, Select } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { ThemeProvider, styled } from 'styled-components';
 import { ColorPicker } from 'antd';
 import Question from './Questions';
@@ -10,23 +10,34 @@ import { useStore } from '@/Store/store';
 
 const App: React.FC = () => {
   const [form] = Form.useForm();
-  
+
   const [color, setColor] = useState(false)
   const [question, setQuestion] = useState(false)
   const [colorValue, setColorValur] = useState<any | null>(null)
   const [qType, setQType] = useState<any | null>(null)
   const [container, setContainer] = useState<any | null>(null)
   const [conColor, setConColor] = useState(false)
+  const [getData,setGetData] = useState<any[]>([]);
+  const {
+    quizStore: { getApii },
+} = useStore(null);
 
-  
+
+useEffect(() => {
+    const load = async () => {
+        const res = await getApii()
+        setGetData(res)
+    }
+    load()
+}, [])
+
 
   const handleColor = (e: any) => {
     setColor(true)
     console.log(e);
   }
- 
+
   const handleColorPicker = (e: any) => {
-    console.log(e, 'pivkererer');
     setColorValur(e)
     setColor(false)
   }
@@ -36,7 +47,6 @@ const App: React.FC = () => {
     console.log(e);
   }
   const handleColorPicker2 = (e: any) => {
-    console.log(e, 'pivkererer');
     setContainer(e)
     setConColor(false)
   }
@@ -69,16 +79,14 @@ const App: React.FC = () => {
                 form={form}
                 onFinish={() => setQuestion(true)}
               >
-
                 <Form.Item label='Name' name='name' rules={[{ required: true, message: 'Please Select' }]}>
                   <Input placeholder='Please Enter Your Name' ></Input>
                 </Form.Item>
-
                 <Form.Item label='Email' name='email' rules={[{ required: true, message: 'Please Select' }]} >
                   <Input placeholder='Please Enter Your Email'></Input>
                 </Form.Item>
 
-                <Form.Item rules={[{ required: true, message: 'Please Select' }]} style={{marginTop:'5px'}} label='Select Question Type' name='Select'>
+                <Form.Item rules={[{ required: true, message: 'Please Select' }]} style={{ marginTop: '5px' }} label='Select Question Type' name='Select'>
                   <Select
                     placeholder='Select'
                     allowClear
@@ -86,22 +94,20 @@ const App: React.FC = () => {
                     size='large'
                     options={[{ value: 'frontend', label: 'frontend' }, { value: 'backend', label: 'backend' }]}
                   />
-                </Form.Item> 
+                </Form.Item>
 
-                <Form.Item>  
-                  <div className='btn'>
-                    <button>Next</button>
-                  </div>
+                <Form.Item>
+                  <button>Next</button>
                 </Form.Item>
               </Form>
             </div>) : (
-            <Question qType={qType}></Question>)}
+            <Question qType={qType} data={getData}></Question>)}
         </Container>
       </Main>
     </ThemeProvider>
   );
 };
- 
+
 export default App;
 
 
@@ -110,9 +116,12 @@ export const Main = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  /* background: black; */
+  height: 94vh;
   background-color: ${(props) => (props.theme?.main1 ? props.theme.main1 : 'black')};
+
+  @media (max-width: 682px) {
+    margin-left: -15px; 
+  }
 `;
 
 
@@ -126,19 +135,17 @@ export const Container = styled.div`
       margin-top: 15px;
       margin-bottom: 20px;
     }
-
+    margin-top: -30px;
   background: ${(props) => (props?.theme?.main2 ? props.theme.main2 : 'beige')};
-
     padding: 1vw 5vw 5vw 5vw;
     border-radius: 8px;
     width: 600px;
 
-.btn{
 
 button{
-  width: 453px; 
-  font-size: 20px;
-  height: 54px;
+  width: 100%; 
+  font-size: 20px; 
+  height: 54px; 
   margin-top: 20px;
   border-radius: 15px;
   border: none;
@@ -146,10 +153,10 @@ button{
   color: white;
 
   @media (max-width: 680px) {
-  width: 100%;
+  width: 100%; 
+}  
 }
-}
-}
+
   
 
   .items{
@@ -161,7 +168,7 @@ button{
     box-shadow: 1px 2px 22px 1px #c9c9c9;
 
     }
-  }
+}
 
   .hint{
     text-align: end;
@@ -182,13 +189,12 @@ button{
     background-color: ${(props) => (props?.theme?.main2 ? props.theme.main2 : 'beige')};
   }
   .ant-row{
-    display: block  ;
-    width: 450px;  
-  }
+    display: block  ; 
+  } 
   .ant-select-selector{ 
     width: 100%;
-    height: 45px;
-    padding: 6px 12px 7px 14px;
+    height: 50px !important;
+    padding: 6px 12px !important; 
   }
  
   .ant-select{
@@ -215,4 +221,4 @@ button{
 export const After = styled.div`
 text-align: center;
 font-size: 25px;
-`
+` 
